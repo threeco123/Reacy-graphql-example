@@ -1,0 +1,185 @@
+- table:
+    schema: public
+    name: restaurants
+  configuration:
+    custom_root_fields: {}
+    custom_column_names:
+      image_url: imageUrl
+  object_relationships:
+  - name: owner
+    using:
+      foreign_key_constraint_on: owner_id
+  array_relationships:
+  - name: reviews
+    using:
+      foreign_key_constraint_on:
+        column: restaurant_id
+        table:
+          schema: public
+          name: reviews
+  computed_fields:
+  - name: rating
+    definition:
+      function:
+        schema: public
+        name: average_restaurant_review
+      table_argument: null
+    comment: ""
+  - name: reviewsCount
+    definition:
+      function:
+        schema: public
+        name: restaurant_review_count
+      table_argument: null
+    comment: ""
+  insert_permissions:
+  - role: owner
+    permission:
+      check: {}
+      set:
+        owner_id: x-hasura-User-Id
+      columns:
+      - address
+      - description
+      - image_url
+      - name
+      - phone
+      backend_only: false
+  select_permissions:
+  - role: owner
+    permission:
+      columns:
+      - address
+      - description
+      - id
+      - image_url
+      - name
+      - owner_id
+      - phone
+      computed_fields:
+      - rating
+      - reviewsCount
+      filter: {}
+  - role: user
+    permission:
+      columns:
+      - address
+      - description
+      - id
+      - image_url
+      - name
+      - owner_id
+      - phone
+      computed_fields:
+      - rating
+      - reviewsCount
+      filter: {}
+  update_permissions:
+  - role: owner
+    permission:
+      columns:
+      - address
+      - description
+      - name
+      - phone
+      filter: {}
+      check: null
+      set:
+        owner_id: x-hasura-User-Id
+- table:
+    schema: public
+    name: reviews
+  configuration:
+    custom_root_fields: {}
+    custom_column_names:
+      visitted_at: visittedAt
+  object_relationships:
+  - name: restaurant
+    using:
+      foreign_key_constraint_on: restaurant_id
+  - name: user
+    using:
+      foreign_key_constraint_on: user_id
+  insert_permissions:
+  - role: owner
+    permission:
+      check:
+        restaurant:
+          owner_id:
+            _ne: X-Hasura-User-Id
+      set:
+        user_id: x-hasura-User-Id
+      columns:
+      - message
+      - rating
+      - restaurant_id
+      - visitted_at
+      backend_only: false
+  - role: user
+    permission:
+      check: {}
+      set:
+        user_id: x-hasura-User-Id
+      columns:
+      - message
+      - rating
+      - restaurant_id
+      - visitted_at
+      backend_only: false
+  select_permissions:
+  - role: owner
+    permission:
+      columns:
+      - created_at
+      - id
+      - message
+      - rating
+      - restaurant_id
+      - user_id
+      - visitted_at
+      filter: {}
+  - role: user
+    permission:
+      columns:
+      - created_at
+      - id
+      - message
+      - rating
+      - restaurant_id
+      - user_id
+      - visitted_at
+      filter: {}
+  update_permissions:
+  - role: owner
+    permission:
+      columns: []
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+      check: null
+  - role: user
+    permission:
+      columns: []
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+      check: null
+- table:
+    schema: public
+    name: session
+- table:
+    schema: public
+    name: users
+  select_permissions:
+  - role: owner
+    permission:
+      columns:
+      - id
+      - name
+      filter: {}
+  - role: user
+    permission:
+      columns:
+      - id
+      - name
+      filter: {}
